@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}多功能工具网站{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <style>
+        /* 全局样式 */
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar {
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            font-weight: 500;
+        }
+        .footer {
+            margin-top: auto;
+            padding: 1.5rem 0;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        .footer h5 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        .footer ul li {
+            margin-bottom: 0.5rem;
+        }
+        .footer ul li:last-child {
+            margin-bottom: 0;
+        }
+        /* 闪现消息样式 */
+        .alert {
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        /* 内容区域样式 */
+        .content-wrapper {
+            flex: 1;
+        }
+        /* 卡片样式 */
+        .card {
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-tools me-2"></i>Free Api集合
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="bi bi-house-door me-1"></i>首页
+                        </a>
+                    </li>
+                    
+                    <!-- 常用工具 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-star me-1"></i>常用工具
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for plugin in plugins %}
+                                {% if plugin.name in ['identity', 'express', 'ip'] %}
+                                <li>
+                                    <a class="dropdown-item" href="/{{ plugin.name }}">
+                                        {% if plugin.name == 'identity' %}
+                                        <i class="bi bi-person-vcard me-1"></i>
+                                        {% elif plugin.name == 'express' %}
+                                        <i class="bi bi-truck me-1"></i>
+                                        {% elif plugin.name == 'ip' %}
+                                        <i class="bi bi-globe me-1"></i>
+                                        {% endif %}
+                                        {{ plugin.title }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    
+                    <!-- 信息查询 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-search me-1"></i>信息查询
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for plugin in plugins %}
+                                {% if plugin.name in ['bank', 'region', 'quote','user_search'] %}
+                                <li>
+                                    <a class="dropdown-item" href="/{{ plugin.name }}">
+                                        {% if plugin.name == 'bank' %}
+                                        <i class="bi bi-bank me-1"></i>
+                                        {% elif plugin.name == 'region' %}
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        {% elif plugin.name == 'quote' %}
+                                        <i class="bi bi-chat-quote me-1"></i>
+                                         {% elif plugin.name == 'user_search' %}
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        {% endif %}
+                                        {{ plugin.title }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    
+                    <!-- 创意工具 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-palette me-1"></i>创意工具
+                        </a>
+                        <ul class="dropdown-menu">
+                            {% for plugin in plugins %}
+                                {% if plugin.name in ['greeting-card'] %}
+                                <li>
+                                    <a class="dropdown-item" href="/{{ plugin.name }}">
+                                        <i class="bi bi-card-image me-1"></i>
+                                        {{ plugin.title }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <!-- 其他未分类的插件 -->
+                            {% for plugin in plugins %}
+                                {% if plugin.name not in ['identity', 'express', 'ip', 'bank', 'region', 'quote', 'greeting-card','user_search'] %}
+                                <li>
+                                    <a class="dropdown-item" href="/{{ plugin.name }}">
+                                        <i class="bi bi-tools me-1"></i>
+                                        {{ plugin.title }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 闪现消息 -->
+    <div class="container mt-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {% if category == 'success' %}
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        {% elif category == 'danger' %}
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% elif category == 'warning' %}
+                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                        {% else %}
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="content-wrapper">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">关于我们</h5>
+                    <p class="text-muted mb-0">提供各种实用的Free Api，让生活和工作更加便捷。</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">快速链接</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/" class="text-muted text-decoration-none">首页</a></li>
+                        {% for plugin in plugins[:4] %}
+                        <li><a href="/{{ plugin.name }}" class="text-muted text-decoration-none">{{ plugin.title }}</a></li>
+                        {% endfor %}
+                        <li><a href="/" class="text-muted text-decoration-none">更多工具...</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 class="mb-3">联系我们</h5>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="bi bi-envelope me-2"></i>163space@gmail.com</li>
+                        <li><i class="bi bi-github me-2"></i>https://github.com/daichangya</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="text-center text-muted">
+                <small>&copy; 2023 Free Api集合. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?4bdc02239b6fe6f4e90583308d9ed3cd";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

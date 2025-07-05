@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}API列表{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>开放API列表</h2>
+    <div class="list-group">
+        {% for api in apis %}
+        <a href="/apiinfo{{ api.endpoint }}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ api.description }}</h5>
+                <small>{{ api.methods|join(', ') }}</small>
+            </div>
+            <p class="mb-1">
+                {% if api.params %}
+                参数: {% for name, desc in api.params.items() %}
+                <code>{{ name }}</code>: {{ desc }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+                {% endif %}
+            </p>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

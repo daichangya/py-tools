@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 class="card-title text-danger">访问频率超限</h2>
+                    <p class="card-text">
+                        您今日的访问次数已达到上限（100次/天）。<br>
+                        请等待24小时后再试。
+                    </p>
+                    <p class="card-text text-muted">
+                        剩余访问次数：{{ remaining_visits }}
+                    </p>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="mb-0">IP地址信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 text-right">
+                                    <strong>IP地址：</strong>
+                                </div>
+                                <div class="col-md-8 text-left">
+                                    {{ ip_address }}
+                                </div>
+                            </div>
+                            {% if ip_info %}
+                                <div class="row mt-2">
+                                    <div class="col-md-4 text-right">
+                                        <strong>地理位置：</strong>
+                                    </div>
+                                    <div class="col-md-8 text-left">
+                                        {{ ip_info.country }} {{ ip_info.region }} {{ ip_info.province }} {{ ip_info.city }}
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-4 text-right">
+                                        <strong>运营商：</strong>
+                                    </div>
+                                    <div class="col-md-8 text-left">
+                                        {{ ip_info.isp }}
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-4 text-right">
+                                        <strong>自治系统号：</strong>
+                                    </div>
+                                    <div class="col-md-8 text-left">
+                                        {{ ip_info.asn }}
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-md-4 text-right">
+                                        <strong>时区：</strong>
+                                    </div>
+                                    <div class="col-md-8 text-left">
+                                        {{ ip_info.timezone }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="row mt-2">
+                                    <div class="col-12 text-center text-muted">
+                                        无法获取IP详细信息
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="/" class="btn btn-primary">返回首页</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

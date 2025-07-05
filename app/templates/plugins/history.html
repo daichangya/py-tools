@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}历史上的今天{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">历史上的今天</h4>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-4">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label for="date" class="form-label">选择日期</label>
+                                <input type="date" id="date" name="date" class="form-control" 
+                                       value="{{ today }}">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary">查询</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    {% if events %}
+                    <h5 class="mb-4">
+                        {% if query_date %}
+                        {{ query_date }}发生的重要事件：
+                        {% else %}
+                        {{ display_date }}发生的重要事件：
+                        {% endif %}
+                    </h5>
+
+                    <div class="row row-cols-1 g-4">
+                        {% for event in events %}
+                        <div class="col">
+                            <div class="card h-100">
+                                {% if event.pic_index %}
+                                <img src="{{ event.pic_index }}" class="card-img-top" alt="{{ event.title }}" style="max-height: 200px; object-fit: cover;">
+                                {% endif %}
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <strong>{{ event.year }}年：</strong>
+                                        <a href="{{ event.link }}" target="_blank">{{ event.title|safe }}</a>
+                                    </h5>
+                                    <p class="card-text">{{ event.desc|safe }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        暂时无法获取历史事件数据
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

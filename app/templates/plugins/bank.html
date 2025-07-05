@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}银行卡查询 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-credit-card me-2"></i>银行卡查询
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-4">
+                本工具可以查询银行卡的发卡行、卡片类型，并验证卡号有效性。支持国内主流银行卡。
+            </p>
+
+            <form method="post" class="mb-4">
+                <div class="mb-3">
+                    <label for="card_no" class="form-label">银行卡号</label>
+                    <input type="text" class="form-control form-control-lg"
+                           id="card_no" name="card_no"
+                           placeholder="请输入银行卡号"
+                           pattern="[0-9\s-]*">
+                    <div class="form-text">支持数字间的空格或破折号</div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-2"></i>查询
+                </button>
+            </form>
+
+            {% if result %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">查询结果</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="{{ result.bank_img }}" alt="{{ result.bank }}"
+                             style="height: 40px; width: auto;" class="me-3">
+                        <h4 class="mb-0">{{ result.bank }}</h4>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <tr>
+                            <th style="width: 30%">卡号</th>
+                            <td>{{ result.masked_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>卡片类型</th>
+                            <td>
+                                <span class="badge {% if 'CC' in result.type %}bg-danger{% else %}bg-success{% endif %}">
+                                    {{ result.type }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% if result.name %}
+                        <tr>
+                            <th>卡片名称</th>
+                            <td>{{ result.name }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th>验证状态</th>
+                            <td>
+                                <span class="badge {% if result.valid %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if result.valid %}有效{% else %}无效{% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">支持的银行</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for code, name in banks.items() %}
+                        <div class="col-md-3 col-sm-4 col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='img/bank-icons/' + code + '.jpg') }}"
+                                     onerror="this.src='https://apimg.alipay.com/combo.png?d=cashier&t={{ code }}'; this.onerror=null;"
+                                     alt="{{ name }}" style="height: 24px; width: auto;" class="me-2">
+                                <small>{{ name }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 自动格式化卡号输入，每4位添加空格
+    const cardInput = document.getElementById('card_no');
+    cardInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        value = value.replace(/(\d{4})/g, '$1 ').trim();
+        e.target.value = value;
+    });
+});
+</script>
+{% endblock %}

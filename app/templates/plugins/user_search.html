@@ -1,0 +1,573 @@
+{% extends "base.html" %}
+
+{% block title %}社工库查询{% endblock %}
+
+{% block content %}
+<style>
+    .search-card {
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .search-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .search-header {
+        background: #007bff;
+        color: white;
+        padding: 20px;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 0;
+    }
+    .search-input {
+        border-radius: 50px;
+        padding: 12px 20px;
+        border: 2px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    .search-input:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .search-btn {
+        border-radius: 50px;
+        padding: 10px 30px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        background: #007bff;
+        border: none;
+    }
+    .search-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    }
+    .results-table {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+    .results-table thead {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+    }
+    .results-table th {
+        font-weight: 500;
+        border: none;
+    }
+    .results-table td {
+        vertical-align: middle;
+    }
+    .results-table tbody tr {
+        transition: all 0.2s ease;
+    }
+    .results-table tbody tr:hover {
+        background-color: rgba(37, 117, 252, 0.05);
+    }
+    .fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .search-icon {
+        margin-right: 8px;
+    }
+    .result-count {
+        font-size: 14px;
+        color: #6c757d;
+        margin-bottom: 15px;
+    }
+    .no-results-icon {
+        font-size: 48px;
+        color: #17a2b8;
+        margin-bottom: 15px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .back-to-top {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+        opacity: 0;
+    }
+    
+    .back-to-top.show {
+        opacity: 1;
+    }
+    
+    .back-to-top:hover {
+        background-color: #0056b3;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .back-to-top {
+            bottom: 15px;
+            right: 15px;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+        }
+    }
+    
+    .help-tip {
+        background-color: #f8f9fa;
+        border-left: 4px solid #17a2b8;
+        padding: 10px 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+    }
+    
+    .example-query {
+        display: inline-block;
+        background: #e9f7fb;
+        padding: 5px 12px;
+        border-radius: 20px;
+        margin: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .example-query:hover {
+        background: #d1edf6;
+        transform: translateY(-2px);
+    }
+    
+    /* 加载动画样式 */
+    .loading-container {
+        display: none;
+        text-align: center;
+        padding: 30px;
+        margin: 20px 0;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 3px solid rgba(0, 123, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: #007bff;
+        animation: spin 1s ease-in-out infinite;
+    }
+    
+    .loading-text {
+        margin-top: 15px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<!-- 返回顶部按钮 -->
+<div id="backToTop" class="back-to-top">
+    <i class="fas fa-arrow-up"></i>
+</div>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="search-header text-center mb-4">
+                <i class="fas fa-database search-icon"></i>社工库查询系统
+            </h2>
+            
+            <div class="card search-card">
+                <div class="card-body p-4">
+                    <form id="searchForm" class="mb-4">
+                        <div class="form-group">
+                            <label for="query" class="h5 mb-3">请输入查询内容</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control search-input border-left-0" 
+                                       id="query" name="query"
+                                       placeholder="输入手机号" required>
+                            </div>
+                            <small class="form-text text-muted mt-2">
+                                <i class="fas fa-info-circle"></i> 支持查询方式：手机号
+                            </small>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary search-btn">
+                                <i class="fas fa-search search-icon"></i>开始查询
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="results" class="mt-5 fade-in" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0"><i class="fas fa-list-alt mr-2"></i>查询结果</h4>
+                            <span id="resultCount" class="result-count"></span>
+                        </div>
+                        <div class="table-responsive results-table">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>用户名</th>
+                                        <th>邮箱</th>
+                                        <th>手机号</th>
+                                        <th>姓名</th>
+                                        <th>身份证号</th>
+                                        <th>地址</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resultsBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="noResults" class="alert alert-info mt-4 text-center py-4" style="display: none;">
+                            <div class="no-results-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h5>暂未找到匹配的结果</h5>
+                            <div class="help-tip mt-3">
+                                <p><i class="fas fa-lightbulb text-warning mr-2"></i>查询提示</p>
+                                <ul class="text-left list-unstyled">
+                                    <li><i class="fas fa-check-circle text-info mr-2"></i> 手机号格式可能不正确，请确保输入11位有效手机号</li>
+                                    <li><i class="fas fa-check-circle text-info mr-2"></i> 该信息可能不在我们的数据库中</li>
+                                    <li><i class="fas fa-check-circle text-info mr-2"></i> 数据库可能尚未收录该信息</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <p class="mb-2">您可以尝试以下示例查询：</p>
+                                <div class="example-queries">
+                                    <span class="example-query" onclick="fillExampleQuery('13800138000')">
+                                        <i class="fas fa-mobile-alt mr-1"></i> 13800138000
+                                    </span>
+                                    <span class="example-query" onclick="fillExampleQuery('15912345678')">
+                                        <i class="fas fa-mobile-alt mr-1"></i> 15912345678
+                                    </span>
+                                    <span class="example-query" onclick="fillExampleQuery('18600001234')">
+                                        <i class="fas fa-mobile-alt mr-1"></i> 18600001234
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button class="btn btn-sm btn-outline-primary mr-2" onclick="document.getElementById('query').focus()">
+                                    <i class="fas fa-edit mr-1"></i> 修改查询内容
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="document.getElementById('query').value = ''; document.getElementById('query').focus()">
+                                    <i class="fas fa-eraser mr-1"></i> 清空重新输入
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="error" class="alert alert-danger mt-4 fade-in" style="display: none;">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span id="errorMessage"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('searchForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const query = document.getElementById('query').value.trim();
+    const resultsDiv = document.getElementById('results');
+    const resultsBody = document.getElementById('resultsBody');
+    const noResults = document.getElementById('noResults');
+    const errorDiv = document.getElementById('error');
+    const resultCount = document.getElementById('resultCount');
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+
+    // 重置显示状态
+    errorDiv.style.display = 'none';
+    resultsDiv.style.display = 'none';
+    noResults.style.display = 'none';
+    resultsBody.innerHTML = '';
+    
+    // 使用相同的验证函数进行验证
+    if (!validatePhoneNumber(query)) {
+        let errorMessage = '';
+        if (query.length !== 11) {
+            errorMessage = '请输入11位手机号码';
+        } else {
+            errorMessage = '请输入有效的手机号码（以1开头）';
+        }
+        
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            ${errorMessage}
+        `;
+        errorDiv.style.display = 'block';
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+        
+        // 高亮输入框提示错误
+        queryInput.focus();
+        updateInputStatus(query, false);
+        
+        // 滚动到错误信息
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        return;
+    }
+
+    // 显示加载状态
+    submitButton.disabled = true;
+    submitButton.innerHTML = `<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>正在查询...`;
+
+    try {
+        // 添加超时控制
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+        
+        const response = await fetch('/user_search/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `query=${encodeURIComponent(query)}`,
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId); // 清除超时计时器
+        
+        const data = await response.json();
+
+        if (data.error) {
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${escapeHtml(data.error)}`;
+            errorDiv.style.display = 'block';
+            // 滚动到错误信息
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+
+        if (!data.results || data.results.length === 0) {
+            noResults.style.display = 'block';
+            resultsDiv.style.display = 'none';  // 确保结果表格被隐藏
+            // 滚动到无结果提示
+            noResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+
+        // 显示结果
+        resultsDiv.style.display = 'block';
+        resultCount.textContent = `找到 ${data.results.length} 条记录`;
+
+        // 添加结果行，带有淡入动画
+        data.results.forEach((user, index) => {
+            const row = document.createElement('tr');
+            row.style.animation = `fadeIn 0.3s ease-in-out ${index * 0.05}s forwards`;
+            row.style.opacity = '0';
+            row.innerHTML = `
+                <td><i class="fas fa-user text-primary mr-2"></i>${escapeHtml(user.username || '-')}</td>
+                <td><i class="fas fa-envelope text-info mr-2"></i>${escapeHtml(user.email || '-')}</td>
+                <td><i class="fas fa-phone text-success mr-2"></i>${escapeHtml(user.phone || '-')}</td>
+                <td><i class="fas fa-id-card text-warning mr-2"></i>${escapeHtml(user.full_name || '-')}</td>
+                <td><i class="fas fa-passport text-danger mr-2"></i>${escapeHtml(user.id_card || '-')}</td>
+                <td><i class="fas fa-map-marker-alt text-primary mr-2"></i>${escapeHtml(user.address || '-')}</td>
+            `;
+            resultsBody.appendChild(row);
+        });
+
+        // 滚动到结果区域
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (error) {
+        let errorMessage = '';
+        if (error.name === 'AbortError') {
+            errorMessage = '查询超时，请稍后重试。如果问题持续存在，可能是查询数据量较大，建议缩小查询范围。';
+        } else if (error instanceof TypeError && error.message.includes('network')) {
+            errorMessage = '网络连接错误，请检查您的网络连接后重试。';
+        } else if (error.message.includes('JSON')) {
+            errorMessage = '服务器返回的数据格式错误，请联系管理员。';
+        } else {
+            errorMessage = '查询过程中发生错误，请稍后重试。如果问题持续存在，请联系管理员。';
+            console.error('查询错误:', error); // 在控制台记录具体错误信息
+        }
+        
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            ${errorMessage}
+        `;
+        errorDiv.style.display = 'block';
+        
+        // 如果是超时错误，滚动到错误消息
+        if (error.name === 'AbortError') {
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    } finally {
+        // 恢复按钮状态
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalButtonText;
+    }
+});
+
+// 添加输入框动画效果和实时验证
+const queryInput = document.getElementById('query');
+const searchBtn = document.querySelector('.search-btn');
+
+// 实时验证函数
+function validatePhoneNumber(value) {
+    return /^1[3-9]\d{9}$/.test(value);
+}
+
+// 更新输入状态
+function updateInputStatus(value, isValid) {
+    if (value === '') {
+        queryInput.style.borderColor = '#e0e0e0';
+        queryInput.style.boxShadow = 'none';
+        searchBtn.disabled = true;
+        return;
+    }
+    
+    if (isValid) {
+        queryInput.style.borderColor = '#28a745';
+        queryInput.style.boxShadow = '0 0 0 0.2rem rgba(40, 167, 69, 0.25)';
+        searchBtn.disabled = false;
+    } else {
+        queryInput.style.borderColor = '#dc3545';
+        queryInput.style.boxShadow = '0 0 0 0.2rem rgba(220, 53, 69, 0.25)';
+        searchBtn.disabled = true;
+    }
+}
+
+// 输入事件监听
+queryInput.addEventListener('input', function() {
+    const value = this.value.trim();
+    const isValid = value.length === 11 && validatePhoneNumber(value);
+    updateInputStatus(value, isValid);
+    
+    // 更新输入提示
+    const feedbackElement = this.parentElement.querySelector('.input-feedback');
+    if (!feedbackElement) {
+        const feedback = document.createElement('div');
+        feedback.className = 'input-feedback small mt-1';
+        this.parentElement.appendChild(feedback);
+    }
+    
+    const feedback = this.parentElement.querySelector('.input-feedback');
+    if (value === '') {
+        feedback.textContent = '';
+        feedback.className = 'input-feedback small mt-1';
+    } else if (isValid) {
+        feedback.textContent = '✓ 手机号格式正确';
+        feedback.className = 'input-feedback small mt-1 text-success';
+    } else {
+        feedback.textContent = value.length !== 11 ? 
+            '✗ 请输入11位手机号' : 
+            '✗ 请输入有效的手机号（以1开头）';
+        feedback.className = 'input-feedback small mt-1 text-danger';
+    }
+});
+
+// 焦点事件
+queryInput.addEventListener('focus', function() {
+    this.parentElement.style.transform = 'scale(1.02)';
+    this.parentElement.style.transition = 'transform 0.3s ease';
+});
+
+queryInput.addEventListener('blur', function() {
+    this.parentElement.style.transform = 'scale(1)';
+    // 如果输入框为空，重置样式
+    if (this.value.trim() === '') {
+        this.style.borderColor = '#e0e0e0';
+        this.style.boxShadow = 'none';
+    }
+});
+
+// 初始状态下禁用搜索按钮
+searchBtn.disabled = true;
+
+// 返回顶部按钮功能
+const backToTopBtn = document.getElementById('backToTop');
+
+// 监听滚动事件
+window.addEventListener('scroll', function() {
+    // 当页面滚动超过300px时显示按钮
+    if (window.scrollY > 300) {
+        backToTopBtn.classList.add('show');
+        backToTopBtn.style.display = 'block';
+    } else {
+        backToTopBtn.classList.remove('show');
+        setTimeout(() => {
+            if (!backToTopBtn.classList.contains('show')) {
+                backToTopBtn.style.display = 'none';
+            }
+        }, 300);
+    }
+});
+
+// 点击返回顶部
+backToTopBtn.addEventListener('click', function() {
+    // 平滑滚动到顶部
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+
+// 填充示例查询并自动提交
+function fillExampleQuery(query) {
+    const queryInput = document.getElementById('query');
+    queryInput.value = query;
+    
+    // 触发input事件以更新验证状态
+    const inputEvent = new Event('input', { bubbles: true });
+    queryInput.dispatchEvent(inputEvent);
+    
+    // 添加一个轻微的高亮动画效果
+    queryInput.parentElement.style.transition = 'background-color 0.3s ease';
+    queryInput.parentElement.style.backgroundColor = '#e9f7fb';
+    setTimeout(() => {
+        queryInput.parentElement.style.backgroundColor = '';
+    }, 800);
+    
+    // 短暂延迟后自动提交表单
+    setTimeout(() => {
+        // 确保验证通过后才提交
+        if (!searchBtn.disabled) {
+            document.getElementById('searchForm').dispatchEvent(new Event('submit', { bubbles: true }));
+        }
+    }, 500);
+}
+
+// 用于防止XSS攻击的辅助函数
+function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+</script>
+{% endblock %}

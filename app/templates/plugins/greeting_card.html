@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">贺卡预览</h5>
+                </div>
+                <div class="card-body">
+                   <div id="greetingPreview" class="text-center p-4" style="min-height: 800px; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center;">
+                        <div  style="background: rgba(255, 255, 255, 0.8); padding: 20px; border-radius: 10px; max-width: 80%;">
+                            <div id="greetingReceiver" class="mb-3" style="color: #d9534f; font-size: 2.2em;"></div>
+                            <div id="greetingText" class="mb-3" style="color: #d9534f; font-size: 2.2em;"></div>
+                            <div id="greetingSender" class="text-end" style="color: #d9534f; font-size: 2.2em;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">生成贺卡</h5>
+                </div>
+                <div class="card-body">
+                    <form id="greetingForm">
+                        <div class="mb-3">
+                            <label for="festival" class="form-label">选择节日</label>
+                            <select class="form-select" id="festival" name="festival" required>
+                                <option value="">请选择节日...</option>
+                                {% for fest in festivals %}
+                                <option value="{{ fest }}" {% if fest == festival %}selected{% endif %}>{{ fest }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="receiver" class="form-label">收信人</label>
+                            <input type="text" class="form-control" id="receiver" name="receiver" value="亲爱的朋友" placeholder="亲爱的..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sender" class="form-label">发信人</label>
+                            <input type="text" class="form-control" id="sender" name="sender" value="您的名字" placeholder="您的名字" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">生成贺卡</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 页面加载完成后的处理
+document.addEventListener('DOMContentLoaded', function() {
+    const festivalSelect = document.getElementById('festival');
+    const festival = festivalSelect.value;
+    
+    // 设置初始背景图片
+    if (festival) {
+        // 自动触发表单提交
+        document.getElementById('greetingForm').dispatchEvent(new Event('submit'));
+    }
+});
+
+document.getElementById('festival').addEventListener('change', function() {
+    const festival = this.value;
+    const previewDiv = document.getElementById('greetingPreview');
+    if (festival) {
+        previewDiv.style.backgroundImage = `url(/static/images/festivals/${festival}.jpg)`;
+    }
+});
+
+document.getElementById('greetingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        festival: document.getElementById('festival').value,
+        receiver: document.getElementById('receiver').value,
+        sender: document.getElementById('sender').value
+    };
+    
+    try {
+        const response = await fetch('/greeting_card/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            const data = result.data;
+            document.getElementById('greetingReceiver').textContent = data.receiver + '：';
+            document.getElementById('greetingText').textContent = data.greeting;
+            document.getElementById('greetingSender').textContent = '来自：' + data.sender;
+            
+            // 设置背景图片
+            if (data.image) {
+                document.getElementById('greetingPreview').style.backgroundImage = `url(/static/images/festivals/${data.image})`;
+            }
+        } else {
+            alert(result.message || '生成贺卡失败，请重试');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('生成贺卡时发生错误，请重试');
+    }
+});
+</script>
+{% endblock %}

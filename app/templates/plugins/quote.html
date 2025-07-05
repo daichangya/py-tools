@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}每日一言{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">每日一言</h4>
+                </div>
+                <div class="card-body">
+                    {% if quote %}
+                    <blockquote class="blockquote">
+                        <p class="mb-4">{{ quote.content }}</p>
+                        <footer class="blockquote-footer">
+                            {{ quote.author }}
+                            <cite title="分类">{{ quote.category }}</cite>
+                        </footer>
+                    </blockquote>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        暂时无法获取名言数据
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Free Api集合 - {{ super() }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="display-4 fw-bold mb-3">Free Api集合</h1>
+                <p class="lead mb-4">提供各种实用的Free Api，让生活和工作更加便捷。无需下载安装，随时随地使用。</p>
+                <p class="mb-0">
+                    <i class="bi bi-check-circle-fill me-2"></i>免费使用
+                    <i class="bi bi-check-circle-fill ms-4 me-2"></i>简单方便
+                    <i class="bi bi-check-circle-fill ms-4 me-2"></i>持续更新
+                </p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="bi bi-tools display-1"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tools Section -->
+<div class="container mb-5">
+    <h2 class="text-center mb-4">可用Api</h2>
+    <div class="row g-4">
+        {% for plugin in plugins %}
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0 hover-shadow">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if plugin.name == 'identity' %}
+                        <i class="bi bi-person-vcard fs-2 text-primary me-3"></i>
+                        {% elif plugin.name == 'express' %}
+                        <i class="bi bi-truck fs-2 text-primary me-3"></i>
+                        {% elif plugin.name == 'ip' %}
+                        <i class="bi bi-globe fs-2 text-primary me-3"></i>
+                        {% elif plugin.name == 'region' %}
+                        <i class="bi bi-map fs-2 text-primary me-3"></i>
+                        {% else %}
+                        <i class="bi bi-tools fs-2 text-primary me-3"></i>
+                        {% endif %}
+                        <h3 class="card-title h5 mb-0">{{ plugin.title }}</h3>
+                    </div>
+                    <p class="card-text text-muted">{{ plugin.description }}</p>
+                    <a href="/{{ plugin.name }}" class="btn btn-outline-primary mt-3 stretched-link">
+                        立即使用
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">为什么选择我们的工具？</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="bi bi-lightning-charge-fill text-primary display-4 mb-3"></i>
+                    <h3 class="h5">快速便捷</h3>
+                    <p class="text-muted">无需下载安装，打开浏览器即可使用全部功能</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="bi bi-shield-check text-primary display-4 mb-3"></i>
+                    <h3 class="h5">安全可靠</h3>
+                    <p class="text-muted">所有数据处理均在本地完成，保护您的隐私安全</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="bi bi-arrow-repeat text-primary display-4 mb-3"></i>
+                    <h3 class="h5">持续更新</h3>
+                    <p class="text-muted">定期添加新功能，及时修复问题，持续提供服务</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Documentation Section -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <i class="bi bi-code-slash text-primary display-4 mb-3"></i>
+            <h2 class="mb-4">开放API接口</h2>
+            <p class="lead mb-4">我们提供开放的API接口，方便开发者集成我们的服务到自己的应用中。</p>
+            <a href="/apiinfo" class="btn btn-primary btn-lg">
+                <i class="bi bi-file-earmark-code me-2"></i>查看API文档
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+.bi {
+    line-height: 1;
+}
+</style>
+{% endblock %}

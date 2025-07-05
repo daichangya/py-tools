@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}身份证信息查询API{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>身份证信息查询API</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>API说明</h5>
+        </div>
+        <div class="card-body">
+            <p>通过身份证号码查询基本信息，包括性别、出生日期、籍贯等。</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>请求方式</h5>
+        </div>
+        <div class="card-body">
+            <code>GET /api/identity?cardno=110101199003072396</code>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>返回示例</h5>
+        </div>
+        <div class="card-body">
+            <pre>{
+    "status": "success",
+    "data": {
+        "cardno": "110101199003072396",
+        "gender": "男",
+        "birthday": "1990-03-07",
+        "address": "北京市东城区"
+    }
+}</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

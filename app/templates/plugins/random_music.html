@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">随机音乐播放器</h3>
+                </div>
+                <div class="card-body text-center">
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% elif music_url %}
+                        <!-- 封面图片 -->
+                        <div class="mb-4">
+                            <img src="{{ cover_url }}" alt="专辑封面" class="img-fluid rounded shadow" style="max-width: 200px;">
+                        </div>
+
+                        <!-- 歌曲信息 -->
+                        <div class="mb-4">
+                            <h4 class="mb-2">{{ music_name }}</h4>
+                            <p class="text-muted">演唱：{{ artist_name }}</p>
+                        </div>
+
+                        <!-- 音频播放器 -->
+                        <div class="mb-4">
+                            <audio controls class="w-100" style="max-width: 300px;">
+                                <source src="{{ music_url }}" type="audio/mpeg">
+                                您的浏览器不支持音频播放器。
+                            </audio>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="/random_music" class="btn btn-primary">
+                        <i class="bi bi-arrow-clockwise"></i> 换一首歌
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border: none;
+    }
+
+    audio::-webkit-media-controls-panel {
+        background-color: #f8f9fa;
+    }
+
+    audio::-webkit-media-controls-play-button,
+    audio::-webkit-media-controls-volume-slider,
+    audio::-webkit-media-controls-mute-button {
+        filter: grayscale(1);
+    }
+
+    .btn-primary {
+        padding: 0.5rem 1.5rem;
+        border-radius: 25px;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+    }
+</style>
+{% endblock %}

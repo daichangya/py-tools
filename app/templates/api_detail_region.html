@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}省市区查询API{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>省市区查询API</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>API说明</h5>
+        </div>
+        <div class="card-body">
+            <p>查询中国省市区三级联动数据，支持按不同层级查询。</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>请求方式</h5>
+        </div>
+        <div class="card-body">
+            <p><code>GET /api/region/provinces</code> - 获取所有省份</p>
+            <p><code>GET /api/region/cities?province=省份名称</code> - 获取某省下所有城市</p>
+            <p><code>GET /api/region/districts?city=城市名称</code> - 获取某城市下所有区县</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>返回示例</h5>
+        </div>
+        <div class="card-body">
+            <pre>{
+    "status": "success",
+    "data": [
+        {"code": "110000", "name": "北京市"},
+        {"code": "310000", "name": "上海市"},
+        ...
+    ]
+}</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}快递查询 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="mb-3">快递查询</h1>
+            <p class="lead text-muted">输入快递单号，即时查询物流信息</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- 查询表单 -->
+            <div class="card shadow-sm mb-5">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-truck me-2 text-primary"></i>输入快递单号
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" class="needs-validation" novalidate>
+                        <div class="mb-4">
+                            <label for="express_no" class="form-label">快递单号</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="bi bi-box-seam"></i>
+                                </span>
+                                <input type="text" class="form-control form-control-lg"
+                                       id="express_no" name="express_no"
+                                       placeholder="请输入快递单号" required>
+                                <div class="invalid-feedback">
+                                    请输入有效的快递单号
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                支持国内主流快递公司，自动识别快递公司
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-search me-2"></i>查询
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 查询结果 -->
+            {% if result %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-truck me-2"></i>{{ result.company }}
+                        </h5>
+                        <span class="badge bg-light text-primary">{{ result.status }}</span>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-box-seam fs-4 text-primary me-2"></i>
+                            <h6 class="mb-0">快递单号</h6>
+                        </div>
+                        <p class="mb-0 ps-4 fs-5">{{ result.express_no }}</p>
+                    </div>
+
+                    <!-- 物流进度条 -->
+                    <div class="mb-4">
+                        <div class="progress" style="height: 8px;">
+                            {% if result.status == '已签收' %}
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                            {% elif result.status == '派送中' %}
+                            <div class="progress-bar bg-info" style="width: 75%"></div>
+                            {% elif result.status == '运输中' %}
+                            <div class="progress-bar bg-primary" style="width: 50%"></div>
+                            {% else %}
+                            <div class="progress-bar bg-warning" style="width: 25%"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 物流时间线 -->
+                    <h6 class="mb-3">物流详情</h6>
+                    <div class="timeline">
+                        {% for update in result.updates %}
+                        <div class="timeline-item">
+                            <div class="timeline-item-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="fw-bold">{{ update.status }}</span>
+                                    <span class="text-muted small">{{ update.time }}</span>
+                                </div>
+                                <div class="d-flex">
+                                    <i class="bi bi-geo-alt text-primary me-2"></i>
+                                    <span>{{ update.location }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 时间线样式 */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+.timeline:before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: #e9ecef;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+}
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+.timeline-item:before {
+    content: '';
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #0d6efd;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #0d6efd;
+}
+.timeline-item:first-child:before {
+    background: #198754;
+}
+.timeline-item-content {
+    background: #f8f9fa;
+    border-radius: 0.5rem;
+    padding: 15px;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// 表单验证
+(function() {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

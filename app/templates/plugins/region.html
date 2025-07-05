@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}省市区查询 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 页面标题 -->
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="mb-3">省市区查询</h1>
+            <p class="lead text-muted">查询行政区划代码与名称的对应关系</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- 查询表单 -->
+            <div class="card shadow-sm mb-5">
+                <div class="card-header bg-white py-3">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#search-tab" type="button">
+                                <i class="bi bi-search me-2"></i>快速查询
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#select-tab" type="button">
+                                <i class="bi bi-list-nested me-2"></i>层级选择
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content">
+                        <!-- 快速查询表单 -->
+                        <div class="tab-pane fade show active" id="search-tab">
+                            <form method="POST">
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">查询方式</label>
+                                        <select name="query_type" class="form-select" id="queryType">
+                                            <option value="name">按名称查询</option>
+                                            <option value="code">按代码查询</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8 mb-3">
+                                        <label class="form-label">查询内容</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control"
+                                                   name="query_value" id="queryValue"
+                                                   placeholder="输入名称或代码" required>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-search me-1"></i>查询
+                                            </button>
+                                        </div>
+                                        <div class="form-text" id="queryHelp"></div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- 层级选择表单 -->
+                        <div class="tab-pane fade" id="select-tab">
+                            <form id="cascadeForm" class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">省份</label>
+                                    <select class="form-select" id="province" name="province">
+                                        <option value="">请选择省份</option>
+                                        {% for province in provinces %}
+                                        <option value="{{ province.code }}">{{ province.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">城市</label>
+                                    <select class="form-select" id="city" name="city" disabled>
+                                        <option value="">请选择城市</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">区县</label>
+                                    <select class="form-select" id="district" name="district" disabled>
+                                        <option value="">请选择区县</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 查询结果 -->
+            {% if results %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-table me-2"></i>查询结果
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>行政区划代码</th>
+                                    <th>名称</th>
+                                    <th>级别</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in results %}
+                                <tr>
+                                    <td>{{ item.code }}</td>
+                                    <td>{{ item.full_name }}</td>
+                                    <td>
+                                        {% if item.level == 1 %}
+                                        <span class="badge bg-primary">省级</span>
+                                        {% elif item.level == 2 %}
+                                        <span class="badge bg-info">市级</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">区县级</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-primary view-details"
+                                                data-code="{{ item.code }}" data-bs-toggle="modal"
+                                                data-bs-target="#detailsModal">
+                                            <i class="bi bi-info-circle"></i> 详情
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 详情模态框 -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-geo-alt me-2"></i>区域详细信息
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 行政区划层级 -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="bi bi-diagram-3 me-2"></i>行政区划层级
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="areaHierarchy" class="area-hierarchy"></div>
+                    </div>
+                </div>
+
+                <!-- 区域信息 -->
+                <div class="row">
+                    <!-- 基本信息 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-info-circle me-2"></i>基本信息
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-sm">
+                                    <tbody id="areaInfo">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 下级区域 -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">
+                                    <i class="bi bi-diagram-2 me-2"></i>下级区域
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="subAreas" class="sub-areas"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.table th {
+    white-space: nowrap;
+}
+.area-hierarchy {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.area-hierarchy .area-item {
+    display: flex;
+    align-items: center;
+}
+.area-hierarchy .area-item:not(:last-child)::after {
+    content: '\F285';
+    font-family: bootstrap-icons !important;
+    margin-left: 1rem;
+    color: #6c757d;
+}
+.sub-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.sub-areas .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 查询方式切换提示
+    const queryType = document.getElementById('queryType');
+    const queryValue = document.getElementById('queryValue');
+    const queryHelp = document.getElementById('queryHelp');
+
+    queryType.addEventListener('change', function() {
+        if (this.value === 'name') {
+            queryValue.placeholder = '输入地区名称，如：北京、朝阳';
+            queryHelp.textContent = '支持模糊搜索，如输入"朝阳"可匹配所有包含"朝阳"的地区';
+        } else {
+            queryValue.placeholder = '输入6位行政区划代码';
+            queryHelp.textContent = '请输入标准的6位数字行政区划代码';
+        }
+    });
+
+    // 级联选择
+    const province = document.getElementById('province');
+    const city = document.getElementById('city');
+    const district = document.getElementById('district');
+
+    province.addEventListener('change', async function() {
+        city.innerHTML = '<option value="">请选择城市</option>';
+        district.innerHTML = '<option value="">请选择区县</option>';
+        city.disabled = true;
+        district.disabled = true;
+
+        if (this.value) {
+            try {
+                const response = await fetch(`/api/areas?parent_code=${this.value}`);
+                const data = await response.json();
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        city.add(new Option(item.name, item.code));
+                    });
+                    city.disabled = false;
+                }
+            } catch (error) {
+                console.error('获取城市列表失败:', error);
+            }
+        }
+    });
+
+    city.addEventListener('change', async function() {
+        district.innerHTML = '<option value="">请选择区县</option>';
+        district.disabled = true;
+
+        if (this.value) {
+            try {
+                const response = await fetch(`/api/areas?parent_code=${this.value}`);
+                const data = await response.json();
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        district.add(new Option(item.name, item.code));
+                    });
+                    district.disabled = false;
+                }
+            } catch (error) {
+                console.error('获取区县列表失败:', error);
+            }
+        }
+    });
+
+    // 详情模态框
+    const detailsModal = document.getElementById('detailsModal');
+    detailsModal.addEventListener('show.bs.modal', async function(event) {
+        const button = event.relatedTarget;
+        const code = button.getAttribute('data-code');
+
+        try {
+            const response = await fetch(`/api/area_details?code=${code}`);
+            const data = await response.json();
+
+            // 显示层级关系
+            const hierarchy = document.getElementById('areaHierarchy');
+            hierarchy.innerHTML = data.hierarchy.map(item => `
+                <div class="area-item">
+                    <span class="badge bg-light text-dark">
+                        ${item.name}
+                        <small class="text-muted ms-1">${item.code}</small>
+                    </span>
+                </div>
+            `).join('');
+
+            // 显示基本信息
+            const info = document.getElementById('areaInfo');
+            info.innerHTML = `
+                <tr>
+                    <th scope="row">区域代码</th>
+                    <td>${data.code}</td>
+                </tr>
+                <tr>
+                    <th scope="row">区域名称</th>
+                    <td>${data.name}</td>
+                </tr>
+                <tr>
+                    <th scope="row">行政级别</th>
+                    <td>${data.level_name}</td>
+                </tr>
+            `;
+
+            // 显示下级区域
+            const subAreas = document.getElementById('subAreas');
+            if (data.sub_areas && data.sub_areas.length > 0) {
+                subAreas.innerHTML = data.sub_areas.map(item => `
+                    <span class="badge bg-light text-dark view-details"
+                          data-code="${item.code}" data-bs-toggle="modal"
+                          data-bs-target="#detailsModal">
+                        ${item.name}
+                    </span>
+                `).join('');
+            } else {
+                subAreas.innerHTML = '<p class="text-muted mb-0">无下级区域</p>';
+            }
+
+        } catch (error) {
+            console.error('获取区域详情失败:', error);
+        }
+    });
+});
+</script>
+{% endblock %}

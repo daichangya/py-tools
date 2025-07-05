@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}身份证制作{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">身份证制作</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>填写身份证信息</h5>
+                </div>
+                <div class="card-body">
+                    <form id="idCardForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">姓名</label>
+                            <input type="text" class="form-control" id="name" name="name" value="张三" required>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="gender" class="form-label">性别</label>
+                                <select class="form-select" id="gender" name="gender" required>
+                                    <option value="男">男</option>
+                                    <option value="女">女</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="nationality" class="form-label">民族</label>
+                                <input type="text" class="form-control" id="nationality" name="nationality" value="汉" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="birth_date" class="form-label">出生日期</label>
+                            <input type="text" class="form-control" id="birth_date" name="birth_date" value="1990年01月01日" placeholder="例如：1990年01月01日" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="address" class="form-label">住址</label>
+                            <textarea class="form-control" id="address" name="address" rows="2" required>北京市海淀区中关村南大街5号</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_number" class="form-label">身份证号码</label>
+                            <input type="text" class="form-control" id="id_number" name="id_number" value="110101199001010123" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="issue_authority" class="form-label">签发机关</label>
+                            <input type="text" class="form-control" id="issue_authority" name="issue_authority" value="北京市公安局海淀分局" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="valid_period" class="form-label">有效期限</label>
+                            <input type="text" class="form-control" id="valid_period" name="valid_period" value="2020.01.01-2030.01.01" placeholder="例如：2020.01.01-2030.01.01" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="photo" class="form-label">照片</label>
+                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                            <div class="form-text">请上传证件照，建议尺寸为500×670像素</div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="auto_cutout" name="auto_cutout" value="true">
+                            <label class="form-check-label" for="auto_cutout">自动抠图（去除照片背景）</label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">生成身份证</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>预览</h5>
+                </div>
+                <div class="card-body">
+                    <div id="previewContainer" class="text-center">
+                        <p class="text-muted">填写信息并点击"生成身份证"按钮后在此处预览</p>
+                    </div>
+                    <div id="previewTabs" class="d-none">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i> 提示：此功能仅供预览，不提供下载选项。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 下载功能已移除，仅提供预览 -->
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const idCardForm = document.getElementById('idCardForm');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewTabs = document.getElementById('previewTabs');
+
+    idCardForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // 显示加载提示
+        previewContainer.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">正在生成身份证，请稍候...</p>';
+        
+        // 隐藏预览提示
+        previewTabs.classList.add('d-none');
+
+        // 创建FormData对象
+        const formData = new FormData(idCardForm);
+
+        // 发送请求
+        fetch('/id_card_maker/generate', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 清空预览容器
+                previewContainer.innerHTML = '';
+                
+                // 显示预览图片
+                const previewImg = document.createElement('img');
+                previewImg.src = data.preview.combined;
+                previewImg.className = 'img-fluid border';
+                previewImg.alt = '身份证预览';
+                
+                // 添加预览图片到容器
+                previewContainer.appendChild(previewImg);
+                
+                // 显示提示信息
+                const infoMsg = document.createElement('div');
+                infoMsg.className = 'alert alert-info mt-3';
+                infoMsg.innerHTML = '<i class="fas fa-info-circle"></i> 提示：此功能仅供预览，不提供下载选项。';
+                previewContainer.appendChild(infoMsg);
+                
+                // 显示成功消息
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success mt-3';
+                successMsg.innerHTML = data.message;
+                previewContainer.appendChild(successMsg);
+            } else {
+                // 显示错误信息
+                previewContainer.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            previewContainer.innerHTML = '<div class="alert alert-danger">生成身份证时发生错误，请重试</div>';
+        });
+    });
+
+    // 添加身份证号码验证
+    const idNumberInput = document.getElementById('id_number');
+    idNumberInput.addEventListener('blur', function() {
+        const idNumber = this.value.trim();
+        if (idNumber && idNumber.length === 18) {
+            // 从身份证号码中提取出生日期
+            const year = idNumber.substring(6, 10);
+            const month = idNumber.substring(10, 12);
+            const day = idNumber.substring(12, 14);
+            const birthDate = `${year}年${month}月${day}日`;
+
+            // 设置出生日期字段
+            document.getElementById('birth_date').value = birthDate;
+
+            // 从身份证号码中提取性别
+            const genderCode = parseInt(idNumber.charAt(16)) % 2;
+            document.getElementById('gender').value = genderCode === 1 ? '男' : '女';
+        }
+    });
+});
+</script>
+{% endblock %}

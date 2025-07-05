@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ api.description }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ api.description }}</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>API说明</h5>
+        </div>
+        <div class="card-body">
+            <p>{{ api.metadata.description }}</p>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>请求方式</h5>
+        </div>
+        <div class="card-body">
+            <code>{{ api.methods|join('|') }} /api{{ api.endpoint }}</code>
+            {% if api.params %}
+            <div class="mt-3">
+                <h6>参数:</h6>
+                <ul>
+                    {% for name, desc in api.params.items() %}
+                    <li><code>{{ name }}</code>: {{ desc }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>返回示例</h5>
+        </div>
+        <div class="card-body">
+            <pre>{
+    "status": "success",
+    "data": {
+        // 示例数据将根据API不同而变化
+    }
+}</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

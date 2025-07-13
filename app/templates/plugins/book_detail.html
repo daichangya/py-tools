@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}图书详情 - PyTools{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>图书详情</h1>
+        <a href="{{ url_for('book_search.show_book_search', **search_params) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> 返回搜索
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if book %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <!-- 图书封面 -->
+                <div class="col-md-3 text-center mb-4">
+                    {% if book.ol_cover_url or book.cover_url %}
+                    <img src="{{ book.ol_cover_url }}" alt="{{ book.title }}"
+                         class="img-fluid rounded shadow" style="max-height: 300px;"
+                         onerror="
+                            if (this.src !== '{% if book.cover_url %}{{ book.cover_url|replace('zlib:///', 'https://book.liangji.eu.org/') }}{% endif %}') {
+                                this.src='{% if book.cover_url %}{{ book.cover_url|replace('zlib:///', 'https://book.liangji.eu.org/') }}{% endif %}';
+                                this.onerror = function() {
+                                    this.style.display = 'none';
+                                    this.src='{{ url_for('static', filename='images/white.png') }}';
+                                };
+                            }
+                         ">
+                    {% else %}
+                    <div class="text-center text-muted p-5 bg-light rounded">
+                        <i class="bi bi-book fs-1 mb-3"></i>
+                        <p>无封面</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- 图书基本信息 -->
+                <div class="col-md-9">
+                    <h2 class="mb-3">{{ book.title }}</h2>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>作者：</strong> {{ book.author }}</p>
+                            <p><strong>出版社：</strong> {{ book.publisher }}</p>
+                            <p><strong>出版年份：</strong> {{ book.year }}</p>
+                            <p><strong>ISBN：</strong> {{ book.isbn }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>语言：</strong> {{ book.language }}</p>
+                            <p><strong>文件格式：</strong> {{ book.extension }}</p>
+                            <p><strong>页数：</strong> {{ book.pages }}</p>
+                            <p><strong>文件大小：</strong> {{ (book.filesize / 1024 / 1024)|round(2) }} MB</p>
+                        </div>
+                    </div>
+
+                    {% if book.description %}
+                    <div class="mb-4">
+                        <h5>图书简介</h5>
+                        <div class="card">
+                            <div class="card-body bg-light">
+                                <p class="card-text">{{ book.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        {% if book.download_url %}
+                        <a href="{{ book.download_url|replace('zlib:///', 'https://book.liangji.eu.org/') }}"
+                           class="btn btn-primary me-2" target="_blank">
+                            <i class="bi bi-download"></i> 下载图书 (原始链接)
+                        </a>
+                        {% endif %}
+                        
+                        {% if book.ipfs_cid %}
+                        <div class="dropdown d-inline-block">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="ipfsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-cloud-download-alt"></i> 通过IPFS下载
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="ipfsDropdown">
+                                {% set filename = book.title|replace(' ', '_')|replace('/', '_')|replace('\\', '_')|replace(':', '_') %}
+                                {% if book.extension %}
+                                    {% set download_filename = filename + '.' + book.extension %}
+                                {% else %}
+                                    {% set download_filename = filename %}
+                                {% endif %}
+                                
+                                <li><a class="dropdown-item" href="https://gateway-ipfs.st/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">GateWay-IPFS</a></li>
+                                <li><a class="dropdown-item" href="https://ipfs.io/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">IPFS.io</a></li>
+                                <li><a class="dropdown-item" href="https://dweb.link/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">Dweb.link</a></li>
+                                <li><a class="dropdown-item" href="https://gateway.pinata.cloud/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">Pinata</a></li>
+                                <li><a class="dropdown-item" href="https://cloudflare-ipfs.com/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">Cloudflare</a></li>
+                                <li><a class="dropdown-item" href="https://ipfs.infura.io/ipfs/{{ book.ipfs_cid }}?filename={{ download_filename }}" target="_blank" download="{{ download_filename }}">Infura</a></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 额外信息 -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h5>其他信息</h5>
+                    <table class="table table-striped">
+                        <tbody>
+                            {% if book.id %}
+                            <tr>
+                                <th style="width: 200px;">图书ID</th>
+                                <td>{{ book.id }}</td>
+                            </tr>
+                            {% endif %}
+
+                            {% if book.md5 %}
+                            <tr>
+                                <th>MD5</th>
+                                <td>{{ book.md5 }}</td>
+                            </tr>
+                            {% endif %}
+
+                            {% if book.ipfs_cid %}
+                            <tr>
+                                <th>IPFS CID</th>
+                                <td>{{ book.ipfs_cid }}</td>
+                            </tr>
+                            {% endif %}
+
+                            {% if book.series %}
+                            <tr>
+                                <th>系列</th>
+                                <td>{{ book.series }}</td>
+                            </tr>
+                            {% endif %}
+
+                            {% if book.edition %}
+                            <tr>
+                                <th>版本</th>
+                                <td>{{ book.edition }}</td>
+                            </tr>
+                            {% endif %}
+
+                            {% if book.topic %}
+                            <tr>
+                                <th>主题</th>
+                                <td>{{ book.topic }}</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        未找到图书信息
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

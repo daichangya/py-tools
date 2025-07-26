@@ -217,6 +217,9 @@
                             <button type="submit" class="btn btn-primary search-btn">
                                 <i class="fas fa-search search-icon"></i>开始查询
                             </button>
+                            <a href="#" id="randomEmailsBtn" class="btn btn-info ml-2">
+                                <i class="fas fa-random search-icon"></i>随机提取100个邮箱
+                            </a>
                         </div>
                     </form>
 
@@ -558,6 +561,101 @@ function fillExampleQuery(query) {
         }
     }, 500);
 }
+
+// 随机邮箱功能
+document.getElementById('randomEmailsBtn').addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    const resultsDiv = document.getElementById('results');
+    const resultsBody = document.getElementById('resultsBody');
+    const noResults = document.getElementById('noResults');
+    const errorDiv = document.getElementById('error');
+    const resultCount = document.getElementById('resultCount');
+    const randomBtn = this;
+    const originalButtonText = randomBtn.innerHTML;
+    
+    // 重置显示状态
+    errorDiv.style.display = 'none';
+    resultsDiv.style.display = 'none';
+    noResults.style.display = 'none';
+    resultsBody.innerHTML = '';
+    
+    // 显示加载状态
+    randomBtn.disabled = true;
+    randomBtn.innerHTML = `<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>正在获取...`;
+    
+    try {
+        // 添加超时控制
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+        
+        const response = await fetch('/user_search/random_emails', {
+            method: 'GET',
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId); // 清除超时计时器
+        
+        const data = await response.json();
+        
+        if (!data.success || !data.emails || data.emails.length === 0) {
+            noResults.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            noResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        
+        // 显示结果
+        resultsDiv.style.display = 'block';
+        resultCount.textContent = `随机获取了 ${data.count} 个邮箱`;
+        
+        // 修改表头以适应邮箱数据
+        const tableHead = resultsDiv.querySelector('thead tr');
+        tableHead.innerHTML = `
+            <th>ID</th>
+            <th>用户名</th>
+            <th>邮箱</th>
+        `;
+        
+        // 添加结果行，带有淡入动画
+        data.emails.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.style.animation = `fadeIn 0.3s ease-in-out ${index * 0.05}s forwards`;
+            row.style.opacity = '0';
+            row.innerHTML = `
+                <td>${escapeHtml(item.id.toString())}</td>
+                <td><i class="fas fa-user text-primary mr-2"></i>${escapeHtml(item.username || '-')}</td>
+                <td><i class="fas fa-envelope text-info mr-2"></i>${escapeHtml(item.email || '-')}</td>
+            `;
+            resultsBody.appendChild(row);
+        });
+        
+        // 滚动到结果区域
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+    } catch (error) {
+        let errorMessage = '';
+        if (error.name === 'AbortError') {
+            errorMessage = '获取超时，请稍后重试。';
+        } else if (error instanceof TypeError && error.message.includes('network')) {
+            errorMessage = '网络连接错误，请检查您的网络连接后重试。';
+        } else {
+            errorMessage = '获取过程中发生错误，请稍后重试。';
+            console.error('获取随机邮箱错误:', error);
+        }
+        
+        errorDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            ${errorMessage}
+        `;
+        errorDiv.style.display = 'block';
+        errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } finally {
+        // 恢复按钮状态
+        randomBtn.disabled = false;
+        randomBtn.innerHTML = originalButtonText;
+    }
+});
 
 // 用于防止XSS攻击的辅助函数
 function escapeHtml(unsafe) {

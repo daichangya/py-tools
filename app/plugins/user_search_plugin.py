@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
 from app.services.user_service import UserService
+import random
 
 class Plugin:
     def __init__(self):
@@ -47,3 +48,50 @@ class Plugin:
                 'success': True,
                 'results': unique_results
             })
+            
+        @self.blueprint.route('/random_emails', methods=['GET'])
+        def random_emails():
+            """随机提取100个用户的邮箱信息"""
+            try:
+                # 直接在数据库层面随机选择100个用户，避免加载所有用户数据
+                from app.models.user import User
+                from sqlalchemy.sql.expression import func
+                from app.database.db_manager import db_session
+                
+                # 获取用户总数
+                total_users = 50000000
+                
+                # 确定要获取的用户数量
+                limit = min(100, total_users)
+
+                # 如果上述方法都失败，使用备用方法
+                # 获取一个随机偏移量
+                if total_users > limit:
+                    offset = random.randint(0, total_users - limit)
+                    random_users = db_session.query(User).filter(User.email != None).offset(offset).limit(limit).all()
+                else:
+                    random_users = db_session.query(User).filter(User.email != None).limit(limit).all()
+                
+                # 提取邮箱信息
+                email_list = [
+                    {
+                        'id': user.id,
+                        'email': user.email,
+                        'username': user.username
+                    }
+                    for user in random_users if user.email
+                ]
+                
+                return jsonify({
+                    'success': True,
+                    'count': len(email_list),
+                    'emails': email_list
+                })
+            except Exception as e:
+                import traceback
+                error_details = traceback.format_exc()
+                return jsonify({
+                    'success': False,
+                    'error': f"获取随机邮箱失败: {str(e)}",
+                    'details': error_details
+                }), 500

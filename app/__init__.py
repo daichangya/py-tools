@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template
 from app.commands.import_users_command import import_users_command
+from app.commands.import_csdn_users_command import import_csdn_users_command
 from app.services.ip_limit_service import IpLimitService
 from app.services.ip_service import IPService
+from app.config.email_config import EMAIL_CONFIG
 
 # 创建全局服务实例
 ip_limit_service = IpLimitService()
@@ -12,9 +14,13 @@ def create_app():
     创建并配置Flask应用
     """
     app = Flask(__name__)
+    
+    # 添加邮件配置
+    app.config.update(EMAIL_CONFIG)
 
     # 注册CLI命令
     app.cli.add_command(import_users_command)
+    app.cli.add_command(import_csdn_users_command)
 
     # 添加请求前处理函数，检查IP访问限制
     @app.before_request

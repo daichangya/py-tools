@@ -1,8 +1,9 @@
 import sys
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, Response
 import secrets
 from importlib import import_module
+from flask_sitemap import Sitemap
 from app.api_routes import api_blueprint, get_api_list
 from app.apiinfo_routes import apiinfo_blueprint
 
@@ -21,6 +22,12 @@ from app import create_app
 app = create_app()
 # 设置密钥，用于会话和消息闪现
 app.secret_key = secrets.token_hex(16)
+
+# 开发环境配置（正式环境需恢复）
+app.config['SITEMAP_URL_SCHEME'] = 'https'
+app.config['SITEMAP_INCLUDE_RULES_WITHOUT_PARAMS'] = True
+app.config['SITEMAP_IGNORE_ENDPOINTS'] = ['static']  # 忽略静态文件路由
+ext = Sitemap(app=app)
 
 # 插件系统
 class PluginSystem:

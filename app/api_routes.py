@@ -25,6 +25,7 @@ def register_api(endpoint, methods=['GET'], **kwargs):
               description="身份证信息查询API",
               params={"cardno": "身份证号码"})
 def identity_query():
+    identity_query.priority = 0.8  # 设置动态优先级
     """身份证信息查询"""
     cardno = request.args.get('cardno')
     if not cardno:

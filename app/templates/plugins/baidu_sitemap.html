@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}百度sitemap推送 - 多功能工具网站{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4 text-center">
+                <i class="bi bi-diagram-3 me-2"></i>百度sitemap推送工具
+            </h1>
+            <p class="lead text-center mb-5">从sitemap URL获取内容并推送到百度搜索资源平台</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- sitemap推送表单 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-send me-2"></i>sitemap推送
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="pushSitemapForm">
+                        <!-- API密钥配置 -->
+                        <div class="mb-3">
+                            <label for="api_key" class="form-label">百度API密钥</label>
+                            <input type="text" class="form-control" id="api_key" name="api_key" required>
+                            <small class="form-text text-muted">
+                                在<a href="https://ziyuan.baidu.com/" target="_blank">百度搜索资源平台</a>获取您的API密钥
+                            </small>
+                        </div>
+
+                        <!-- sitemap URL -->
+                        <div class="mb-3">
+                            <label for="sitemap_url" class="form-label">sitemap URL</label>
+                            <input type="url" class="form-control" id="sitemap_url" name="sitemap_url" 
+                                   placeholder="https://www.tushu.info/sitemap.xml" required>
+                            <small class="form-text text-muted">
+                                支持标准sitemap.xml、sitemap索引文件和.gz压缩格式
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="bi bi-info-circle me-2"></i>使用说明</h6>
+                            <ul class="mb-0">
+                                <li>确保sitemap URL可公开访问</li>
+                                <li>支持sitemap索引文件（包含多个子sitemap）</li>
+                                <li>自动处理.gz压缩格式</li>
+                                <li>百度API有推送频率限制，请勿频繁操作</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-send me-2"></i>推送sitemap
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL列表推送表单 -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-check me-2"></i>URL列表推送
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="pushUrlsForm">
+                        <!-- API密钥配置 -->
+                        <div class="mb-3">
+                            <label for="urls_api_key" class="form-label">百度API密钥</label>
+                            <input type="text" class="form-control" id="urls_api_key" name="api_key" required>
+                        </div>
+
+                        <!-- URL列表 -->
+                        <div class="mb-3">
+                            <label for="urls" class="form-label">URL列表</label>
+                            <textarea class="form-control" id="urls" name="urls" rows="8" 
+                                      placeholder="https://example.com/page1&#10;https://example.com/page2&#10;https://example.com/page3" required></textarea>
+                            <small class="form-text text-muted">
+                                每行一个URL，必须以http://或https://开头
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-send me-2"></i>推送URL列表
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- sitemap验证表单 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-search me-2"></i>sitemap验证
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="validateSitemapForm">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label for="validate_sitemap_url" class="form-label">sitemap URL</label>
+                                <input type="url" class="form-control" id="validate_sitemap_url" name="sitemap_url" 
+                                       placeholder="https://www.tushu.info/sitemap.xml" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label d-none d-md-block">&nbsp;</label>
+                                <button type="submit" class="btn btn-info w-100">
+                                    <i class="bi bi-search me-2"></i>验证sitemap
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            只解析sitemap内容，不进行推送操作
+                        </small>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 结果显示区域 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle me-2"></i>结果
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="resultArea" class="p-3 bg-light rounded">
+                        <p class="text-center text-muted">结果将显示在这里</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // sitemap推送表单提交
+        const pushSitemapForm = document.getElementById('pushSitemapForm');
+        if (pushSitemapForm) {
+            pushSitemapForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(pushSitemapForm);
+                const jsonData = {
+                    api_key: formData.get('api_key'),
+                    sitemap_url: formData.get('sitemap_url')
+                };
+
+                showLoading('正在处理sitemap，请稍候...');
+                callApi('/baidu_sitemap/push', jsonData);
+            });
+        }
+
+        // URL列表推送表单提交
+        const pushUrlsForm = document.getElementById('pushUrlsForm');
+        if (pushUrlsForm) {
+            pushUrlsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(pushUrlsForm);
+                const jsonData = {
+                    api_key: formData.get('api_key'),
+                    urls: formData.get('urls')
+                };
+
+                showLoading('正在推送URL列表，请稍候...');
+                callApi('/baidu_sitemap/push-urls', jsonData);
+            });
+        }
+
+        // sitemap验证表单提交
+        const validateSitemapForm = document.getElementById('validateSitemapForm');
+        if (validateSitemapForm) {
+            validateSitemapForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(validateSitemapForm);
+                const jsonData = {
+                    sitemap_url: formData.get('sitemap_url')
+                };
+
+                showLoading('正在验证sitemap，请稍候...');
+                callApi('/baidu_sitemap/validate', jsonData);
+            });
+        }
+
+        function showLoading(message) {
+            const resultArea = document.getElementById('resultArea');
+            resultArea.innerHTML = `<div class="alert alert-info">${message}</div>`;
+        }
+
+        function showResult(success, message, data = null) {
+            const resultArea = document.getElementById('resultArea');
+            const alertClass = success ? 'alert-success' : 'alert-danger';
+            
+            let html = `<div class="alert ${alertClass}">${message}</div>`;
+            
+            if (data) {
+                if (data.url_count !== undefined) {
+                    html += `<div class="mt-3">
+                        <h6>解析结果：</h6>
+                        <p>找到 <strong>${data.url_count}</strong> 个URL</p>
+                        ${data.sample_urls && data.sample_urls.length > 0 ? `
+                            <h6>示例URL（前10个）：</h6>
+                            <ul class="list-group">
+                                ${data.sample_urls.map(url => `<li class="list-group-item"><small>${url}</small></li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>`;
+                }
+                
+                if (data.stats) {
+                    html += `<div class="mt-3">
+                        <h6>推送统计：</h6>
+                        <table class="table table-sm table-bordered">
+                            <tr><th>总URL数</th><td>${data.stats.total}</td></tr>
+                            <tr><th>成功推送</th><td>${data.stats.success}</td></tr>
+                            <tr><th>推送失败</th><td>${data.stats.failed}</td></tr>
+                        </table>
+                    </div>`;
+                }
+                
+                if (data.data && data.data.error) {
+                    html += `<div class="mt-3">
+                        <h6>错误详情：</h6>
+                        <pre class="bg-dark text-light p-2 rounded">${JSON.stringify(data.data, null, 2)}</pre>
+                    </div>`;
+                }
+            }
+            
+            resultArea.innerHTML = html;
+        }
+
+        function callApi(endpoint, data) {
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                showResult(result.success, result.message, result);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showResult(false, '请求失败，请检查网络连接或稍后再试');
+            });
+        }
+    });
+</script>
+{% endblock %}

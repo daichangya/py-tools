@@ -11,7 +11,8 @@ class Plugin:
         self.description = "搜索图书信息，支持按书名、作者、出版社等条件查询"
         self.blueprint = Blueprint('book_search', __name__,
                                    template_folder='templates')
-        self.api_base_url = "https://book.liangji.eu.org/search"
+        # self.api_base_url = "https://book.liangji.eu.org/search"
+        self.api_base_url = "http://127.0.0.1:7070/search"
         self.white_pic = "/static/images/white.png"  # 默认白色图片路径
         self._register_routes()
 

@@ -7,7 +7,7 @@ PyTools是一个功能丰富的Python工具集合，提供多种实用功能的W
 
 ## 体验地址
 
-您可以在以下地址体验此工具：[http://api.zthinker.com/](http://api.zthinker.com/)
+您可以在以下地址体验此工具：[http://api.jsdiff.com/](http://api.jsdiff.com/)
 
 ## 功能特点
 

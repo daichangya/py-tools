@@ -27,11 +27,11 @@ class IdCardMakerService:
 
         # 生成唯一文件名
         unique_id = uuid.uuid4()
-        filename = f"photo_{unique_id}.png"
+        filename = f"photo_{unique_id}.jpg"
         file_path = os.path.join(self.uploads_dir, filename)
 
         # 保存文件
-        file.save(file_path)
+        file.save(file_path, 'JPEG', quality=35)
 
         return file_path
 
@@ -79,23 +79,23 @@ class IdCardMakerService:
     def _create_id_card(self, name, gender, nationality, birth_year, birth_month, birth_day,
                         address, id_number, issue_authority, valid_period, photo_path, auto_cutout=False):
         """创建身份证（使用单一模板，上半部分是正面，下半部分是背面）"""
-        # 加载empty.png作为模板
-        empty_png_path = os.path.join(self.usedres_dir, 'empty.png')
+        # 加载empty.jpg作为模板
+        empty_png_path = os.path.join(self.usedres_dir, 'empty.jpg')
         if not os.path.exists(empty_png_path):
-            # 如果找不到empty.png，复制一份到usedres目录
-            source_empty_png = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'empty.png')
+            # 如果找不到empty.jpg，复制一份到usedres目录
+            source_empty_png = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'empty.jpg')
             if os.path.exists(source_empty_png):
                 import shutil
                 shutil.copy(source_empty_png, empty_png_path)
             else:
-                # 如果找不到empty.png，创建一个空白模板
+                # 如果找不到empty.jpg，创建一个空白模板
                 template = Image.new('RGB', (2000, 3000), (255, 255, 255))
                 draw = ImageDraw.Draw(template)
                 # 绘制边框
                 draw.rectangle([(0, 0), (1999, 2999)], outline=(0, 0, 0), width=5)
                 template.save(empty_png_path)
 
-        # 打开模板 - 假设empty.png已经包含了正面和背面的布局
+        # 打开模板 - 假设empty.jpg已经包含了正面和背面的布局
         id_card = Image.open(empty_png_path)
 
         # 添加标签
@@ -193,11 +193,13 @@ class IdCardMakerService:
 
             # 生成唯一文件名
             unique_id = uuid.uuid4()
-            id_card_filename = f"id_card_{unique_id}.png"
+            id_card_filename = f"id_card_{unique_id}.jpg"
 
             # 保存生成的身份证图像
             id_card_path = os.path.join(self.uploads_dir, id_card_filename)
-            id_card.save(id_card_path)
+
+            # 保存时指定JPEG格式和质量
+            id_card.save(id_card_path, 'JPEG', quality=35)
 
             # 生成URL
             id_card_url = f"/static/uploads/id_cards/{id_card_filename}"
